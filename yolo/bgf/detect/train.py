@@ -1,20 +1,21 @@
 # BGF-YOLO based on Ultralytics YOLOv8x 8.0.109 object detection model with same license, AGPL-3.0 license
-from copy import copy
+from copy import copy, deepcopy
 
 import numpy as np
 import sys
-sys.path.append("/root/BGF-YOLO")
-from ...nn.tasks import DetectionModel
-from ...yolo import bgf
-from ...yolo.data import build_dataloader, build_yolo_dataset
-from ...yolo.data.dataloaders.v5loader import create_dataloader
-from ...yolo.engine.trainer import BaseTrainer
-from ...yolo.utils import DEFAULT_CFG, LOGGER, RANK, colorstr
-from ...yolo.utils.plotting import plot_images, plot_labels, plot_results
-from ...yolo.utils.torch_utils import de_parallel, torch_distributed_zero_first
-
+sys.path.append("C:/Yolov8/bgf/BGF-YOLO")
+#from nn.tasks import DetectionModel
+from yolo import bgf
+from yolo.data import build_dataloader, build_yolo_dataset
+from yolo.data.dataloaders.v5loader import create_dataloader
+from yolo.engine.trainer import BaseTrainer
+from yolo.utils import DEFAULT_CFG, LOGGER, RANK, colorstr
+from yolo.utils.plotting import plot_images, plot_labels, plot_results
+from yolo.utils.torch_utils import de_parallel, torch_distributed_zero_first
+from yolo.bgf.detect.val import DetectionValidator
 
 # BaseTrainer python usage
+
 class DetectionTrainer(BaseTrainer):
 
     def build_dataset(self, img_path, mode='train', batch=None):
@@ -77,6 +78,7 @@ class DetectionTrainer(BaseTrainer):
 
     def get_model(self, cfg=None, weights=None, verbose=True):
         """Return a YOLO detection model."""
+        from nn.tasks import DetectionModel
         model = DetectionModel(cfg, nc=self.data['nc'], verbose=verbose and RANK == -1)
         if weights:
             model.load(weights)
@@ -85,7 +87,9 @@ class DetectionTrainer(BaseTrainer):
     def get_validator(self):
         """Returns a DetectionValidator for YOLO model validation."""
         self.loss_names = 'box_loss', 'cls_loss', 'dfl_loss'
-        return v8.detect.DetectionValidator(self.test_loader, save_dir=self.save_dir, args=copy(self.args))
+        print("-----------------------------------------------------------------------------")
+        print(self.args.task)
+        return DetectionValidator(dataloader=self.test_loader, save_dir=self.save_dir, args=deepcopy(self.args))
 
     def label_loss_items(self, loss_items=None, prefix='train'):
         """

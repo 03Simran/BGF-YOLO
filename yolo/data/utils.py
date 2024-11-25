@@ -15,13 +15,14 @@ import cv2
 import numpy as np
 from PIL import ExifTags, Image, ImageOps
 from tqdm import tqdm
-
-from ...nn.autobackend import check_class_names
-from ...yolo.utils import (DATASETS_DIR, LOGGER, NUM_THREADS, ROOT, SETTINGS_YAML, clean_url, colorstr, emojis,
+import sys
+sys.path.append("C:/Yolov8/bgf/BGF-YOLO")
+from nn.autobackend import check_class_names
+from yolo.utils import (DATASETS_DIR, LOGGER, NUM_THREADS, ROOT, SETTINGS_YAML, clean_url, colorstr, emojis,
                                     yaml_load)
-from ...yolo.utils.checks import check_file, check_font, is_ascii
-from ...yolo.utils.downloads import download, safe_download, unzip_file
-from ...yolo.utils.ops import segments2boxes
+from yolo.utils.checks import check_file, check_font, is_ascii
+from yolo.utils.downloads import download, safe_download, unzip_file
+from yolo.utils.ops import segments2boxes
 
 HELP_URL = 'See https://docs.ultralytics.com/yolov5/tutorials/train_custom_data'
 IMG_FORMATS = 'bmp', 'dng', 'jpeg', 'jpg', 'mpo', 'png', 'tif', 'tiff', 'webp', 'pfm'  # image suffixes

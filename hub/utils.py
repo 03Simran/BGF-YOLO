@@ -7,11 +7,12 @@ import sys
 import threading
 import time
 from pathlib import Path
-
+import sys
+sys.path.append("C:/Yolov8/bgf/BGF-YOLO")
 import requests
 from tqdm import tqdm
 
-from ...yolo.utils import (ENVIRONMENT, LOGGER, ONLINE, RANK, SETTINGS, TESTS_RUNNING, TQDM_BAR_FORMAT,
+from yolo.utils import (ENVIRONMENT, LOGGER, ONLINE, RANK, SETTINGS, TESTS_RUNNING, TQDM_BAR_FORMAT,
                                     TryExcept, __version__, colorstr, get_git_origin_url, is_colab, is_git_dir,
                                     is_pip_package)
 

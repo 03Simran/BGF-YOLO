@@ -3,8 +3,9 @@
 import os
 import re
 from pathlib import Path
-
-from ultralytics.yolo.utils import LOGGER, TESTS_RUNNING, colorstr
+import sys
+sys.path.append("C:/Yolov8/bgf/BGF-YOLO")
+from yolo.utils import LOGGER, TESTS_RUNNING, colorstr
 
 try:
     import mlflow

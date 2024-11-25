@@ -3,19 +3,20 @@
 import contextlib
 from copy import deepcopy
 from pathlib import Path
-
+import sys
+sys.path.append("C:/Yolov8/bgf/BGF-YOLO")
 import torch
 import torch.nn as nn
 
-from ...nn.modules import (AIFI, C1, C2, C3, C3TR, SPP, SPPF, Bottleneck, BottleneckCSP, C2f, C3Ghost, C3x,
+from nn.modules import (AIFI, C1, C2, C3, C3TR, SPP, SPPF, Bottleneck, BottleneckCSP, C2f, C3Ghost, C3x,
                                     Classify, Concat, Conv, Conv2, ConvTranspose, Detect, DWConv, DWConvTranspose2d,
                                     Focus, GhostBottleneck, GhostConv, HGBlock, HGStem, Pose, RepC3, RepConv,
-                                    RTDETRDecoder, Segment, cbam_block, eca_block, CA_Block, se_block,CSPStage,BiLevelRoutingAttention)
-from ...yolo.utils import DEFAULT_CFG_DICT, DEFAULT_CFG_KEYS, LOGGER, colorstr, emojis, yaml_load
-from ...yolo.utils.checks import check_requirements, check_suffix, check_yaml
-from ...yolo.utils.loss import v8DetectionLoss
-from ...yolo.utils.plotting import feature_visualization
-from ...yolo.utils.torch_utils import (fuse_conv_and_bn, fuse_deconv_and_bn, initialize_weights,
+                                    RTDETRDecoder,DeformableConv2d, Segment, cbam_block, eca_block, CA_Block, se_block,CSPStage,BiLevelRoutingAttention)
+from yolo.utils import DEFAULT_CFG_DICT, DEFAULT_CFG_KEYS, LOGGER, colorstr, emojis, yaml_load
+from yolo.utils.checks import check_requirements, check_suffix, check_yaml
+from yolo.utils.loss import v8ClassificationLoss, v8DetectionLoss, v8PoseLoss, v8SegmentationLoss
+from yolo.utils.plotting import feature_visualization
+from yolo.utils.torch_utils import (fuse_conv_and_bn, fuse_deconv_and_bn, initialize_weights,
                                                 intersect_dicts, make_divisible, model_info, scale_img, time_sync)
 
 try:
@@ -319,7 +320,7 @@ class ClassificationModel(BaseModel):
 
     def _from_detection_model(self, model, nc=1000, cutoff=10):
         """Create a YOLOv5 classification model from a YOLOv5 detection model."""
-        from ...nn.autobackend import AutoBackend
+        from nn.autobackend import AutoBackend
         if isinstance(model, AutoBackend):
             model = model.model  # unwrap DetectMultiBackend
         model.model = model.model[:cutoff]  # backbone
@@ -406,7 +407,7 @@ def torch_safe_load(weight):
     Returns:
         (dict): The loaded PyTorch model.
     """
-    from ...yolo.utils.downloads import attempt_download_asset
+    from yolo.utils.downloads import attempt_download_asset
 
     check_suffix(file=weight, suffix='.pt')
     file = attempt_download_asset(weight)  # search online if missing locally
@@ -530,6 +531,7 @@ def parse_model(d, ch, verbose=True):  # model_dict, input_channels(3)
         n = n_ = max(round(n * depth), 1) if n > 1 else n  # depth gain
         if m in (Classify, Conv, ConvTranspose, GhostConv, Bottleneck, GhostBottleneck, SPP, SPPF, DWConv, Focus,
                  BottleneckCSP, C1, C2, C2f, C3, C3TR, C3Ghost, nn.ConvTranspose2d, DWConvTranspose2d, C3x, RepC3,CSPStage,
+                 DeformableConv2d
                  ):
             c1, c2 = ch[f], args[0]
             if c2 != nc:  # if c2 not equal to number of classes (i.e. for Classify() output)

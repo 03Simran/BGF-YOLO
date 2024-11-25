@@ -10,8 +10,9 @@ import numpy as np
 import torch
 import torch.nn.functional as F
 import torchvision
-
-from ...yolo.utils import LOGGER
+import sys
+sys.path.append("C:/Yolov8/bgf/BGF-YOLO")
+from yolo.utils import LOGGER
 
 from .metrics import box_iou
 

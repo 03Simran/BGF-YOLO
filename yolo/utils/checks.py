@@ -10,7 +10,8 @@ import shutil
 import subprocess
 from pathlib import Path
 from typing import Optional
-
+import sys
+sys.path.append("C:/Yolov8/bgf/BGF-YOLO")
 import cv2
 import numpy as np
 import pkg_resources as pkg
@@ -18,8 +19,9 @@ import psutil
 import requests
 import torch
 from matplotlib import font_manager
-
-from ...yolo.utils import (AUTOINSTALL, LOGGER, ONLINE, ROOT, USER_CONFIG_DIR, TryExcept, clean_url, colorstr,
+import sys
+sys.path.append("C:/Yolov8/bgf/BGF-YOLO")
+from yolo.utils import (AUTOINSTALL, LOGGER, ONLINE, ROOT, USER_CONFIG_DIR, TryExcept, clean_url, colorstr,
                                     downloads, emojis, is_colab, is_docker, is_kaggle, is_online, is_pip_package,
                                     url2file)
 
@@ -317,7 +319,8 @@ def check_imshow(warn=False):
 
 def check_yolo(verbose=True, device=''):
     """Return a human-readable YOLO software and hardware summary."""
-    from ...yolo.utils.torch_utils import select_device
+
+    from yolo.utils.torch_utils import select_device
 
     if is_colab():
         shutil.rmtree('sample_data', ignore_errors=True)  # remove colab /sample_data directory

@@ -7,8 +7,9 @@ from difflib import get_close_matches
 from pathlib import Path
 from types import SimpleNamespace
 from typing import Dict, List, Union
-
-from ...yolo.utils import (DEFAULT_CFG, DEFAULT_CFG_DICT, DEFAULT_CFG_PATH, LOGGER, ROOT, USER_CONFIG_DIR,
+import sys
+sys.path.append("C:/Yolov8/bgf/BGF-YOLO")
+from yolo.utils import (DEFAULT_CFG, DEFAULT_CFG_DICT, DEFAULT_CFG_PATH, LOGGER, ROOT, USER_CONFIG_DIR,
                                     IterableSimpleNamespace, __version__, checks, colorstr, deprecation_warn,
                                     get_settings, yaml_load, yaml_print)
 

@@ -5,10 +5,11 @@ from pathlib import Path
 from time import sleep
 
 import requests
-
-from ...hub.utils import HUB_API_ROOT, PREFIX, smart_request
-from ...yolo.utils import LOGGER, __version__, checks, emojis, is_colab, threaded
-from ...yolo.utils.errors import HUBModelError
+import sys
+sys.path.append("C:/Yolov8/bgf/BGF-YOLO")
+from hub.utils import HUB_API_ROOT, PREFIX, smart_request
+from yolo.utils import LOGGER, __version__, checks, emojis, is_colab, threaded
+from yolo.utils.errors import HUBModelError
 
 AGENT_NAME = f'python-{__version__}-colab' if is_colab() else f'python-{__version__}-local'
 

@@ -1,10 +1,11 @@
 # BGF-YOLO based on Ultralytics YOLOv8x 8.0.109 object detection model with same license, AGPL-3.0 license
 
 import torch
-
-from ...yolo.engine.predictor import BasePredictor
-from ...yolo.engine.results import Results
-from ...yolo.utils import DEFAULT_CFG, ROOT, ops
+import sys
+sys.path.append("C:/Yolov8/bgf/BGF-YOLO")
+from yolo.engine.predictor import BasePredictor
+from yolo.engine.results import Results
+from yolo.utils import DEFAULT_CFG, ROOT, ops
 
 
 class DetectionPredictor(BasePredictor):

@@ -1,9 +1,10 @@
 # Ultralytics YOLO 🚀, AGPL-3.0 license
 import matplotlib.image as mpimg
 import matplotlib.pyplot as plt
-
-from ultralytics.yolo.utils import LOGGER, TESTS_RUNNING
-from ultralytics.yolo.utils.torch_utils import get_flops, get_num_params
+import sys
+sys.path.append("C:/Yolov8/bgf/BGF-YOLO")
+from yolo.utils import LOGGER, TESTS_RUNNING
+from yolo.utils.torch_utils import get_flops, get_num_params
 
 try:
     import neptune

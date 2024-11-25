@@ -24,15 +24,16 @@ from pathlib import Path
 
 import torch
 from tqdm import tqdm
-
-from ...nn.autobackend import AutoBackend
-from ...yolo.cfg import get_cfg
-from ...yolo.data.utils import check_cls_dataset, check_det_dataset
-from ...yolo.utils import DEFAULT_CFG, LOGGER, RANK, SETTINGS, TQDM_BAR_FORMAT, callbacks, colorstr, emojis
-from ...yolo.utils.checks import check_imgsz
-from ...yolo.utils.files import increment_path
-from ...yolo.utils.ops import Profile
-from ...yolo.utils.torch_utils import de_parallel, select_device, smart_inference_mode
+import sys
+sys.path.append("C:/Yolov8/bgf/BGF-YOLO")
+from nn.autobackend import AutoBackend
+from yolo.cfg import get_cfg
+from yolo.data.utils import check_cls_dataset, check_det_dataset
+from yolo.utils import DEFAULT_CFG, LOGGER, RANK, SETTINGS, TQDM_BAR_FORMAT, callbacks, colorstr, emojis
+from yolo.utils.checks import check_imgsz
+from yolo.utils.files import increment_path
+from yolo.utils.ops import Profile
+from yolo.utils.torch_utils import de_parallel, select_device, smart_inference_mode
 
 
 class BaseValidator:
@@ -69,9 +70,9 @@ class BaseValidator:
         self.pbar = pbar
         #self.args = args or get_cfg(DEFAULT_CFG)
 
-        self.args = args['cfg']# or get_cfg(DEFAULT_CFG)
-        self.model=args['model']
-        self.data = args['data']
+        self.args = args #get_cfg(DEFAULT_CFG)  # or args['cfg']  
+        self.model= args.model # args['model']
+        self.data = args.data # args['data']
         self.model = None
         self.data = None
         self.device = None
@@ -80,7 +81,7 @@ class BaseValidator:
         self.speed = {'preprocess': 0.0, 'inference': 0.0, 'loss': 0.0, 'postprocess': 0.0}
         self.jdict = None
 
-        project = self.args.project or Path(SETTINGS['runs_dir']) / self.args.task
+        project =  Path(SETTINGS['runs_dir']) / self.args.task  or self.args.project 
         name = self.args.name or f'{self.args.mode}'
         self.save_dir = save_dir or increment_path(Path(project) / name,
                                                    exist_ok=self.args.exist_ok if RANK in (-1, 0) else True)

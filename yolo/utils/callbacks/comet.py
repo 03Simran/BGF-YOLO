@@ -1,9 +1,10 @@
 # Ultralytics YOLO 🚀, AGPL-3.0 license
 import os
 from pathlib import Path
-
-from ultralytics.yolo.utils import LOGGER, RANK, TESTS_RUNNING, ops
-from ultralytics.yolo.utils.torch_utils import get_flops, get_num_params
+import sys
+sys.path.append("C:/Yolov8/bgf/BGF-YOLO")
+from yolo.utils import LOGGER, RANK, TESTS_RUNNING, ops
+from yolo.utils.torch_utils import get_flops, get_num_params
 
 try:
     import comet_ml

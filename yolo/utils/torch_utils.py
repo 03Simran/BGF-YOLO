@@ -16,9 +16,10 @@ import torch.distributed as dist
 import torch.nn as nn
 import torch.nn.functional as F
 import torchvision
-
-from ...yolo.utils import DEFAULT_CFG_DICT, DEFAULT_CFG_KEYS, LOGGER, RANK, __version__
-from ...yolo.utils.checks import check_version
+import sys
+sys.path.append("C:/Yolov8/bgf/BGF-YOLO")
+from yolo.utils import DEFAULT_CFG_DICT, DEFAULT_CFG_KEYS, LOGGER, RANK, __version__
+from yolo.utils.checks import check_version
 
 try:
     import thop

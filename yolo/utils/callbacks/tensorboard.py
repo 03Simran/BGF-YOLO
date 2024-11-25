@@ -1,5 +1,8 @@
 # Ultralytics YOLO 🚀, AGPL-3.0 license
-from ultralytics.yolo.utils import LOGGER, TESTS_RUNNING, colorstr
+import sys
+sys.path.append("C:/Yolov8/bgf/BGF-YOLO")
+from yolo.utils import LOGGER, TESTS_RUNNING, colorstr
+
 
 try:
     from torch.utils.tensorboard import SummaryWriter

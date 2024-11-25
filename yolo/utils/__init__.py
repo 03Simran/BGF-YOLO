@@ -21,7 +21,11 @@ import numpy as np
 import torch
 import yaml
 
-from .. import __version__
+import sys
+sys.path.append("C:/Yolov8/bgf/BGF-YOLO")
+
+#from .. import __version__
+__version__ = '1.0.0'
 
 # PyTorch Multi-GPU DDP Constants
 RANK = int(os.getenv('RANK', -1))
@@ -30,8 +34,11 @@ WORLD_SIZE = int(os.getenv('WORLD_SIZE', 1))
 
 # Other Constants
 FILE = Path(__file__).resolve()
-ROOT = FILE.parents[2]  # YOLO
-DEFAULT_CFG_PATH = ROOT / 'yolo/cfg/default.yaml'
+# ROOT = FILE.parents[2]  # YOLO
+# import sys
+from pathlib import Path
+ROOT = Path("C:/Yolov8/bgf/BGF-YOLO")
+DEFAULT_CFG_PATH = ROOT / 'yolo/cfg/default.yaml' 
 NUM_THREADS = min(8, max(1, os.cpu_count() - 1))  # number of YOLOv5 multiprocessing threads
 AUTOINSTALL = str(os.getenv('YOLO_AUTOINSTALL', True)).lower() == 'true'  # global auto-install mode
 VERBOSE = str(os.getenv('YOLO_VERBOSE', True)).lower() == 'true'  # global verbose mode
@@ -682,8 +689,8 @@ def get_settings(file=SETTINGS_YAML, version='0.0.3'):
     """
     import hashlib
 
-    from ...yolo.utils.checks import check_version
-    from ...yolo.utils.torch_utils import torch_distributed_zero_first
+    from yolo.utils.checks import check_version
+    from yolo.utils.torch_utils import torch_distributed_zero_first
 
     git_dir = get_git_dir()
     root = git_dir or Path()

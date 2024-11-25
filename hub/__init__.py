@@ -1,11 +1,12 @@
 # Ultralytics YOLO 🚀, AGPL-3.0 license
 
 import requests
-
-from ...hub.auth import Auth
-from ...hub.utils import PREFIX
-from ...yolo.data.utils import HUBDatasetStats
-from ...yolo.utils import LOGGER, SETTINGS, USER_CONFIG_DIR, yaml_save
+import sys
+sys.path.append("C:/Yolov8/bgf/BGF-YOLO")
+from hub.auth import Auth
+from hub.utils import PREFIX
+from yolo.data.utils import HUBDatasetStats
+from yolo.utils import LOGGER, SETTINGS, USER_CONFIG_DIR, yaml_save
 
 
 def login(api_key=''):

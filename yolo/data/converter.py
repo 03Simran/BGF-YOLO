@@ -5,9 +5,10 @@ from pathlib import Path
 import cv2
 import numpy as np
 from tqdm import tqdm
-
-from ...yolo.utils.checks import check_requirements
-from ...yolo.utils.files import make_dirs
+import sys
+sys.path.append("C:/Yolov8/bgf/BGF-YOLO")
+from yolo.utils.checks import check_requirements
+from yolo.utils.files import make_dirs
 
 
 def coco91_to_coco80_class():

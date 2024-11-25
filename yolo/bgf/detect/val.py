@@ -6,23 +6,27 @@ from pathlib import Path
 import numpy as np
 import torch
 import sys
-sys.path.append("/root/BGF-YOLO")
-from ...yolo.data import build_dataloader, build_yolo_dataset
-from ...yolo.data.dataloaders.v5loader import create_dataloader
-from ...yolo.engine.validator import BaseValidator
-from ...yolo.utils import DEFAULT_CFG, LOGGER, colorstr, ops
-from ...yolo.utils.checks import check_requirements
-from ...yolo.utils.metrics import ConfusionMatrix, DetMetrics, box_iou
-from ...yolo.utils.plotting import output_to_target, plot_images
-from ...yolo.utils.torch_utils import de_parallel
+sys.path.append("C:/Yolov8/bgf/BGF-YOLO")
+from yolo.data import build_dataloader, build_yolo_dataset
+from yolo.data.dataloaders.v5loader import create_dataloader
+from yolo.engine.validator import BaseValidator
+from yolo.utils import DEFAULT_CFG, LOGGER, colorstr, ops
+from yolo.utils.checks import check_requirements
+from yolo.utils.metrics import ConfusionMatrix, DetMetrics, box_iou
+from yolo.utils.plotting import output_to_target, plot_images
+from yolo.utils.torch_utils import de_parallel
 
 
 class DetectionValidator(BaseValidator):
 
     def __init__(self, dataloader=None, save_dir=None, pbar=None, args=None, _callbacks=None):
         """Initialize detection model with necessary variables and settings."""
-        super().__init__(dataloader, save_dir, pbar, args, _callbacks)
-        self.args.task = 'detect'
+        print("-----------------------------------------------")
+        self.args = args
+        self.save_dir = save_dir
+        self.dataloader= dataloader
+        print(self.args.task)
+        super().__init__(dataloader, self.save_dir, pbar, self.args, _callbacks)
         self.is_coco = False
         self.class_map = None
         self.metrics = DetMetrics(save_dir=self.save_dir, on_plot=self.on_plot)

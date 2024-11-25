@@ -14,10 +14,11 @@ import numpy as np
 import requests
 import torch
 from PIL import Image
-
-from ...yolo.data.utils import IMG_FORMATS, VID_FORMATS
-from ...yolo.utils import LOGGER, ROOT, is_colab, is_kaggle, ops
-from ...yolo.utils.checks import check_requirements
+import sys
+sys.path.append("C:/Yolov8/bgf/BGF-YOLO")
+from yolo.data.utils import IMG_FORMATS, VID_FORMATS
+from yolo.utils import LOGGER, ROOT, is_colab, is_kaggle, ops
+from yolo.utils.checks import check_requirements
 
 
 @dataclass

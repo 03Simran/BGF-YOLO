@@ -11,10 +11,11 @@ from pathlib import Path
 
 import numpy as np
 import torch
-
-from ...yolo.data.augment import LetterBox
-from ...yolo.utils import LOGGER, SimpleClass, deprecation_warn, ops
-from ...yolo.utils.plotting import Annotator, colors, save_one_box
+import sys
+sys.path.append("C:/Yolov8/bgf/BGF-YOLO")
+from yolo.data.augment import LetterBox
+from yolo.utils import LOGGER, SimpleClass, deprecation_warn, ops
+from yolo.utils.plotting import Annotator, colors, save_one_box
 
 
 class BaseTensor(SimpleClass):

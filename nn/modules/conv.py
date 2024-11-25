@@ -8,10 +8,11 @@ import math
 import numpy as np
 import torch
 import torch.nn as nn
+import torch.nn.functional as F
 
 __all__ = [
     'Conv', 'LightConv', 'DWConv', 'DWConvTranspose2d', 'ConvTranspose', 'Focus', 'GhostConv', 'ChannelAttention',
-    'SpatialAttention', 'CBAM', 'Concat', 'RepConv']
+    'SpatialAttention', 'CBAM', 'Concat', 'RepConv','DeformableConv2d']
 
 
 def autopad(k, p=None, d=1):  # kernel, padding, dilation
@@ -296,3 +297,101 @@ class Concat(nn.Module):
     def forward(self, x):
         """Forward pass for the YOLOv8 mask Proto module."""
         return torch.cat(x, self.d)
+    
+class DeformableConv2d(nn.Module):
+    """Deformable Convolution 2D layer."""
+
+    def __init__(self, c1, c2, k=3, s=1, p=1, dilation=1, groups=1, act=True):
+        """
+        Initialize Deformable Convolution Layer.
+
+        Args:
+            c1 (int): Input channels.
+            c2 (int): Output channels.
+            k (int): Kernel size. Default is 3.
+            s (int): Stride. Default is 1.
+            p (int): Padding. Default is 1.
+            dilation (int): Dilation rate. Default is 1.
+            groups (int): Number of groups for grouped convolution. Default is 1.
+            act (bool or nn.Module): Activation function. If True, uses SiLU; if False, no activation.
+        """
+        super().__init__()
+        self.offset_conv = nn.Conv2d(c1, 2 * k * k, kernel_size=k, stride=s, padding=p, bias=True)
+        self.mask_conv = nn.Conv2d(c1, k * k, kernel_size=k, stride=s, padding=p, bias=True)
+        self.conv = nn.Conv2d(c1, c2, kernel_size=k, stride=s, padding=p, dilation=dilation, groups=groups, bias=False)
+        self.bn = nn.BatchNorm2d(c2)
+        self.act = nn.SiLU() if act is True else act if isinstance(act, nn.Module) else nn.Identity()
+
+    def forward(self, x):
+        """
+        Forward pass of the deformable convolution.
+        
+        Args:
+            x (torch.Tensor): Input tensor.
+
+        Returns:
+            torch.Tensor: Output tensor after deformable convolution.
+        """
+        offset = self.offset_conv(x)  # Offset field
+        mask = torch.sigmoid(self.mask_conv(x))  # Spatial mask for modulation
+
+        # Apply deformable convolution
+        x = deform_conv2d(x, self.conv.weight, offset, mask, self.conv.stride, self.conv.padding, self.conv.dilation)
+        x = self.bn(x)
+        return self.act(x)
+
+
+def deform_conv2d(input, weight, offset, mask, stride, padding, dilation):
+    """
+    Apply deformable convolution on the input tensor.
+
+    Args:
+        input (torch.Tensor): Input feature map.
+        weight (torch.Tensor): Convolution kernel weights.
+        offset (torch.Tensor): Learned offset for the kernel sampling grid.
+        mask (torch.Tensor): Modulation mask for sampling points.
+        stride (tuple): Stride of the convolution.
+        padding (tuple): Padding for the convolution.
+        dilation (tuple): Dilation of the convolution kernel.
+
+    Returns:
+        torch.Tensor: Output tensor.
+    """
+    # Get input and kernel dimensions
+    b, c_in, h_in, w_in = input.size()
+    c_out, c_in_per_group, k_h, k_w = weight.size()
+
+    # Kernel grid coordinates
+    kernel_grid = torch.stack(torch.meshgrid(
+        torch.arange(k_h, dtype=torch.float32, device=input.device),
+        torch.arange(k_w, dtype=torch.float32, device=input.device),
+        indexing='ij'), dim=-1)  # Shape: (k_h, k_w, 2)
+
+    # Apply dilation to kernel grid
+    kernel_grid = kernel_grid.view(-1, 2) * torch.tensor(dilation, device=input.device)
+
+    # Add offsets to kernel grid
+    offset = offset.permute(0, 2, 3, 1).contiguous()  # (B, H, W, 2*k_h*k_w)
+    offset = offset.view(b, h_in, w_in, -1, 2)  # (B, H, W, k_h*k_w, 2)
+
+    sampling_points = kernel_grid[None, None, None, :, :] + offset  # (B, H, W, k_h*k_w, 2)
+
+    # Normalize sampling points
+    sampling_points = sampling_points / torch.tensor([w_in - 1, h_in - 1], device=input.device)
+    sampling_points = 2 * sampling_points - 1  # Map to [-1, 1] for grid_sample
+
+    # Reshape input for grid sampling
+    input = input.view(b * c_in, 1, h_in, w_in)
+
+    # Perform grid sampling
+    sampled = F.grid_sample(input, sampling_points.view(b * c_in, h_in, w_in, -1, 2), align_corners=False)
+    sampled = sampled.view(b, c_in, k_h, k_w, h_in, w_in)
+
+    # Apply modulation mask
+    mask = mask.unsqueeze(1)  # (B, 1, k_h, k_w, H, W)
+    sampled = sampled * mask
+
+    # Apply convolution kernel
+    output = (sampled * weight.view(1, c_in, k_h, k_w, 1, 1)).sum(dim=[2, 3, 4])
+
+    return output

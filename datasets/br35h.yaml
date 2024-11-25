@@ -1,6 +1,6 @@
-train: D://Br35H/TRAIN/
-val: D://Br35H/VAL/
-test: D://Br35H/TEST/
+train: "C:/Users/Lenovo/Downloads/yolov8.v1i.yolov8/train/images"
+val: "C:/Users/Lenovo/Downloads/yolov8.v1i.yolov8/valid/images"
+test: "C:/Users/Lenovo/Downloads/yolov8.v1i.yolov8/test/images"
 
 nc: 1
-names: ['Brain tumor']
+names: ['fire']

@@ -3,17 +3,18 @@
 import sys
 from pathlib import Path
 from typing import Union
-
+import sys
+sys.path.append("C:/Yolov8/bgf/BGF-YOLO")
 from .. import yolo  # noqa
-from ...nn.tasks import (ClassificationModel, DetectionModel, PoseModel, SegmentationModel,
+from nn.tasks import (ClassificationModel, DetectionModel, PoseModel, SegmentationModel,
                                   attempt_load_one_weight, guess_model_task, nn, yaml_model_load)
-from ...yolo.cfg import get_cfg
-from ...yolo.engine.exporter import Exporter
-from ...yolo.utils import (DEFAULT_CFG, DEFAULT_CFG_DICT, DEFAULT_CFG_KEYS, LOGGER, RANK, ROOT, callbacks,
+from yolo.cfg import get_cfg
+from yolo.engine.exporter import Exporter
+from yolo.utils import (DEFAULT_CFG, DEFAULT_CFG_DICT, DEFAULT_CFG_KEYS, LOGGER, RANK, ROOT, callbacks,
                                     is_git_dir, yaml_load)
-from ...yolo.utils.checks import check_file, check_imgsz, check_pip_update_available, check_yaml
-from ...yolo.utils.downloads import GITHUB_ASSET_STEMS
-from ...yolo.utils.torch_utils import smart_inference_mode
+from yolo.utils.checks import check_file, check_imgsz, check_pip_update_available, check_yaml
+from yolo.utils.downloads import GITHUB_ASSET_STEMS
+from yolo.utils.torch_utils import smart_inference_mode
 
 # Map head to model, trainer, validator, and predictor classes
 TASK_MAP = {

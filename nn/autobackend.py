@@ -15,10 +15,13 @@ import torch
 import torch.nn as nn
 from PIL import Image
 
-from ...yolo.utils import LINUX, LOGGER, ROOT, yaml_load
-from ...yolo.utils.checks import check_requirements, check_suffix, check_version, check_yaml
-from ...yolo.utils.downloads import attempt_download_asset, is_url
-from ...yolo.utils.ops import xywh2xyxy
+import sys
+sys.path.append("C:/Yolov8/bgf/BGF-YOLO")
+
+from yolo.utils import LINUX, LOGGER, ROOT, yaml_load
+from yolo.utils.checks import check_requirements, check_suffix, check_version, check_yaml
+from yolo.utils.downloads import attempt_download_asset, is_url
+from yolo.utils.ops import xywh2xyxy
 
 
 def check_class_names(names):
@@ -100,7 +103,7 @@ class AutoBackend(nn.Module):
             self.model = model  # explicitly assign for to(), cpu(), cuda(), half()
             pt = True
         elif pt:  # PyTorch
-            from ...nn.tasks import attempt_load_weights
+            from nn.tasks import attempt_load_weights
             model = attempt_load_weights(weights if isinstance(weights, list) else w,
                                          device=device,
                                          inplace=True,
@@ -200,7 +203,7 @@ class AutoBackend(nn.Module):
             LOGGER.info(f'Loading {w} for TensorFlow GraphDef inference...')
             import tensorflow as tf
 
-            from ...yolo.engine.exporter import gd_outputs
+            from yolo.engine.exporter import gd_outputs
 
             def wrap_frozen_graph(gd, inputs, outputs):
                 """Wrap frozen graphs for deployment."""
@@ -262,7 +265,7 @@ class AutoBackend(nn.Module):
             nhwc = model.runtime.startswith("tensorflow")
             '''
         else:
-            from ...yolo.engine.exporter import export_formats
+            from yolo.engine.exporter import export_formats
             raise TypeError(f"model='{w}' is not a supported model format. "
                             'See https://docs.ultralytics.com/modes/predict for help.'
                             f'\n\n{export_formats()}')
@@ -444,7 +447,7 @@ class AutoBackend(nn.Module):
         """
         # Return model type from model path, i.e. path='path/to/model.onnx' -> type=onnx
         # types = [pt, jit, onnx, xml, engine, coreml, saved_model, pb, tflite, edgetpu, tfjs, paddle]
-        from ...yolo.engine.exporter import export_formats
+        from yolo.engine.exporter import export_formats
         sf = list(export_formats().Suffix)  # export suffixes
         if not is_url(p, check=False) and not isinstance(p, str):
             check_suffix(p, sf)  # checks
