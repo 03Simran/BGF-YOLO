@@ -78,8 +78,8 @@ class SpatialAttention(nn.Module):
 
 class cbam_block(nn.Module):  #CBAM
     def __init__(self, channel,  ratio=8, kernel_size=7):
-        print("##############################################################")
-        print(channel)
+        # print("##############################################################")
+        # print(channel)
         super(cbam_block, self).__init__()
         self.tt = channel
         self.channelattention = ChannelAttention(channel, ratio=ratio)

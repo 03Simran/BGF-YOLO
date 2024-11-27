@@ -12,7 +12,7 @@ import torch.nn.functional as F
 
 __all__ = [
     'Conv', 'LightConv', 'DWConv', 'DWConvTranspose2d', 'ConvTranspose', 'Focus', 'GhostConv', 'ChannelAttention',
-    'SpatialAttention', 'CBAM', 'Concat', 'RepConv','DeformableConv2d']
+    'SpatialAttention', 'CBAM', 'Concat', 'RepConv']
 
 
 def autopad(k, p=None, d=1):  # kernel, padding, dilation
