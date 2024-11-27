@@ -46,7 +46,6 @@ class ChannelAttention(nn.Module):  #CAM
         self.avg_pool = nn.AdaptiveAvgPool2d(1)
         self.max_pool = nn.AdaptiveMaxPool2d(1)
 
-        # 利用1x1卷积代替全连接
         self.fc1 = nn.Conv2d(in_planes, in_planes // ratio, 1, bias=False)
         self.relu1 = nn.ReLU()
         self.fc2 = nn.Conv2d(in_planes // ratio, in_planes, 1, bias=False)
@@ -60,7 +59,7 @@ class ChannelAttention(nn.Module):  #CAM
         return self.sigmoid(out)
 
 
-class SpatialAttention(nn.Module):   #SAM
+class SpatialAttention(nn.Module):   
     def __init__(self, kernel_size=7):
         super(SpatialAttention, self).__init__()
 
@@ -79,9 +78,10 @@ class SpatialAttention(nn.Module):   #SAM
 
 class cbam_block(nn.Module):  #CBAM
     def __init__(self, channel,  ratio=8, kernel_size=7):
+        print("##############################################################")
+        print(channel)
         super(cbam_block, self).__init__()
         self.tt = channel
-        channel = channel//2
         self.channelattention = ChannelAttention(channel, ratio=ratio)
         self.spatialattention = SpatialAttention(kernel_size=kernel_size)
 
@@ -146,21 +146,12 @@ class CA_Block(nn.Module):
 
 
 class BiLevelRoutingAttention(nn.Module):
-    """
-    n_win: number of windows in one side (so the actual number of windows is n_win*n_win)
-    kv_per_win: for kv_downsample_mode='ada_xxxpool' only, number of key/values per window. Similar to n_win, the actual number is kv_per_win*kv_per_win.
-    topk: topk for window filtering
-    param_attention: 'qkvo'-linear for q,k,v and o, 'none': param free attention
-    param_routing: extra linear for routing
-    diff_routing: wether to set routing differentiable
-    soft_routing: wether to multiply soft routing weights
-    """
+    
     def __init__(self, dim, n_win=7, num_heads=8, qk_dim=None, qk_scale=None,
                  kv_per_win=4, kv_downsample_ratio=4, kv_downsample_kernel=None, kv_downsample_mode='identity',
                  topk=4, param_attention="qkvo", param_routing=False, diff_routing=False, soft_routing=False, side_dwconv=3,
                  auto_pad=True):
         super().__init__()
-        # local attention setting
         self.dim = dim
         self.n_win = n_win  # Wh, Ww
         self.num_heads = num_heads
@@ -169,31 +160,30 @@ class BiLevelRoutingAttention(nn.Module):
         self.scale = qk_scale or self.qk_dim ** -0.5
 
 
-        ################side_dwconv (i.e. LCE in ShuntedTransformer)###########
+        
         self.lepe = nn.Conv2d(dim, dim, kernel_size=side_dwconv, stride=1, padding=side_dwconv//2, groups=dim) if side_dwconv > 0 else \
             lambda x: torch.zeros_like(x)
-
-        ################ global routing setting #################
+        
+        #global routing
         self.topk = topk
         self.param_routing = param_routing
         self.diff_routing = diff_routing
         self.soft_routing = soft_routing
         # router
-        assert not (self.param_routing and not self.diff_routing) # cannot be with_param=True and diff_routing=False
+        assert not (self.param_routing and not self.diff_routing) 
         self.router = TopkRouting(qk_dim=self.qk_dim,
                                   qk_scale=self.scale,
                                   topk=self.topk,
                                   diff_routing=self.diff_routing,
                                   param_routing=self.param_routing)
-        if self.soft_routing: # soft routing, always diffrentiable (if no detach)
+        if self.soft_routing: 
             mul_weight = 'soft'
-        elif self.diff_routing: # hard differentiable routing
+        elif self.diff_routing: 
             mul_weight = 'hard'
-        else:  # hard non-differentiable routing
+        else:  
             mul_weight = 'none'
         self.kv_gather = KVGather(mul_weight=mul_weight)
 
-        # qkv mapping (shared by both global routing and local attention)
         self.param_attention = param_attention
         if self.param_attention == 'qkvo':
             self.qkv = QKVLinear(self.dim, self.qk_dim)
@@ -223,11 +213,6 @@ class BiLevelRoutingAttention(nn.Module):
         elif self.kv_downsample_mode == 'identity': # no kv downsampling
             self.kv_down = nn.Identity()
         elif self.kv_downsample_mode == 'fracpool':
-            # assert self.kv_downsample_ratio is not None
-            # assert self.kv_downsample_kenel is not None
-            # TODO: fracpool
-            # 1. kernel size should be input size dependent
-            # 2. there is a random factor, need to avoid independent sampling for k and v
             raise NotImplementedError('fracpool policy is not implemented yet!')
         elif kv_downsample_mode == 'conv':
             # TODO: need to consider the case where k != v so that need two downsample modules
@@ -248,8 +233,7 @@ class BiLevelRoutingAttention(nn.Module):
             NHWC tensor
         """
         x = rearrange(x, "n c h w -> n h w c")
-        # NOTE: use padding for semantic segmentation
-        ###################################################
+       
         if self.auto_pad:
             N, H_in, W_in, C = x.size()
 
@@ -263,43 +247,29 @@ class BiLevelRoutingAttention(nn.Module):
         else:
             N, H, W, C = x.size()
             assert H%self.n_win == 0 and W%self.n_win == 0 #
-        ###################################################
-
-
-        # patchify, (n, p^2, w, w, c), keep 2d window as we need 2d pooling to reduce kv size
-        #print(x.shape,self.n_win)
+      
         x = rearrange(x, "n (j h) (i w) c -> n (j i) h w c", j=self.n_win, i=self.n_win)
-       # print(x.shape,self.n_win)
-        #################qkv projection###################
-        # q: (n, p^2, w, w, c_qk)
-        # kv: (n, p^2, w, w, c_qk+c_v)
-        # NOTE: separte kv if there were memory leak issue caused by gather
+       
         q, kv = self.qkv(x)
-
-        # pixel-wise qkv
-        # q_pix: (n, p^2, w^2, c_qk)
-        # kv_pix: (n, p^2, h_kv*w_kv, c_qk+c_v)
+        
         q_pix = rearrange(q, 'n p2 h w c -> n p2 (h w) c')
         kv_pix = self.kv_down(rearrange(kv, 'n p2 h w c -> (n p2) c h w'))
         kv_pix = rearrange(kv_pix, '(n j i) c h w -> n (j i) (h w) c', j=self.n_win, i=self.n_win)
 
         q_win, k_win = q.mean([2, 3]), kv[..., 0:self.qk_dim].mean([2, 3]) # window-wise qk, (n, p^2, c_qk), (n, p^2, c_qk)
 
-        ##################side_dwconv(lepe)##################
-        # NOTE: call contiguous to avoid gradient warning when using ddp
         lepe = self.lepe(rearrange(kv[..., self.qk_dim:], 'n (j i) h w c -> n c (j h) (i w)', j=self.n_win, i=self.n_win).contiguous())
         lepe = rearrange(lepe, 'n c (j h) (i w) -> n (j h) (i w) c', j=self.n_win, i=self.n_win)
 
-        ############ gather q dependent k/v #################
 
-        r_weight, r_idx = self.router(q_win, k_win) # both are (n, p^2, topk) tensors
+        r_weight, r_idx = self.router(q_win, k_win) 
 
-        kv_pix_sel = self.kv_gather(r_idx=r_idx, r_weight=r_weight, kv=kv_pix) #(n, p^2, topk, h_kv*w_kv, c_qk+c_v)
+        kv_pix_sel = self.kv_gather(r_idx=r_idx, r_weight=r_weight, kv=kv_pix) 
         k_pix_sel, v_pix_sel = kv_pix_sel.split([self.qk_dim, self.dim], dim=-1)
         # kv_pix_sel: (n, p^2, topk, h_kv*w_kv, c_qk)
         # v_pix_sel: (n, p^2, topk, h_kv*w_kv, c_v)
 
-        ######### do attention as normal ####################
+        
         k_pix_sel = rearrange(k_pix_sel, 'n p2 k w2 (m c) -> (n p2) m c (k w2)', m=self.num_heads) # flatten to BMLC, (n*p^2, m, topk*h_kv*w_kv, c_kq//m) transpose here?
         v_pix_sel = rearrange(v_pix_sel, 'n p2 k w2 (m c) -> (n p2) m (k w2) c', m=self.num_heads) # flatten to BMLC, (n*p^2, m, topk*h_kv*w_kv, c_v//m)
         q_pix = rearrange(q_pix, 'n p2 w2 (m c) -> (n p2) m w2 c', m=self.num_heads) # to BMLC tensor (n*p^2, m, w^2, c_qk//m)
@@ -312,7 +282,6 @@ class BiLevelRoutingAttention(nn.Module):
                         h=H//self.n_win, w=W//self.n_win)
 
         out = out + lepe
-        # output linear
         out = self.wo(out)
 
         # NOTE: use padding for semantic segmentation
@@ -324,8 +293,7 @@ class BiLevelRoutingAttention(nn.Module):
             return out, r_weight, r_idx, attn_weight
         else:
             return rearrange(out, "n h w c -> n c h w")
-
-
+        
 class DFL(nn.Module):
     """
     Integral module of Distribution Focal Loss (DFL).
@@ -968,3 +936,4 @@ class CSPStage(nn.Module):
         y = torch.cat(mid_out, axis=1)
         y = self.conv3(y)
         return y
+    

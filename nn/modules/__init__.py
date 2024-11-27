@@ -28,4 +28,5 @@ __all__ = [
     'LayerNorm2d', 'DFL', 'HGBlock', 'HGStem', 'SPP', 'SPPF', 'C1', 'C2', 'C3', 'C2f', 'C3x', 'C3TR', 'C3Ghost',
     'GhostBottleneck', 'Bottleneck', 'BottleneckCSP', 'Proto', 'Detect', 'Segment', 'Pose', 'Classify',
     'TransformerEncoderLayer', 'RepC3', 'RTDETRDecoder', 'AIFI', 'DeformableTransformerDecoder',
-    'DeformableTransformerDecoderLayer', 'MSDeformAttn', 'MLP','se_block','cbam_block','eca_block','BiLevelRoutingAttention','CA_Block','CSPStage','DeformableConv2d']
+    'DeformableTransformerDecoderLayer', 'MSDeformAttn', 'MLP','se_block','cbam_block','eca_block','BiLevelRoutingAttention','CA_Block','CSPStage',
+    'CustomAttention','DeformableConv2d']

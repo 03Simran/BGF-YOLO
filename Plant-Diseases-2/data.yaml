@@ -1,0 +1,41 @@
+names:
+- Apple Scab Leaf
+- Apple leaf
+- Apple rust leaf
+- Bell_pepper leaf
+- Bell_pepper leaf spot
+- Blueberry leaf
+- Cherry leaf
+- Corn Gray leaf spot
+- Corn leaf blight
+- Corn rust leaf
+- Peach leaf
+- Potato leaf
+- Potato leaf early blight
+- Potato leaf late blight
+- Raspberry leaf
+- Soyabean leaf
+- Soybean leaf
+- Squash Powdery mildew leaf
+- Strawberry leaf
+- Tomato Early blight leaf
+- Tomato Septoria leaf spot
+- Tomato leaf
+- Tomato leaf bacterial spot
+- Tomato leaf late blight
+- Tomato leaf mosaic virus
+- Tomato leaf yellow virus
+- Tomato mold leaf
+- Tomato two spotted spider mites leaf
+- grape leaf
+- grape leaf black rot
+nc: 30
+roboflow:
+  license: CC BY 4.0
+  project: plant-diseases-fbvex
+  url: https://universe.roboflow.com/aadi-5hpnv/plant-diseases-fbvex/dataset/2
+  version: 2
+  workspace: aadi-5hpnv
+test: C:/Yolov8/bgf/BGF-YOLO/Plant-Diseases-2/test/images
+train: C:/Yolov8/bgf/BGF-YOLO/Plant-Diseases-2/train/images
+val: C:/Yolov8/bgf/BGF-YOLO/Plant-Diseases-2/valid/images

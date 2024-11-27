@@ -542,7 +542,9 @@ def parse_model(d, ch, verbose=True):  # model_dict, input_channels(3)
                 args.insert(2, n)  # number of repeats
                 n = 1
         elif m in (se_block,cbam_block,eca_block,CA_Block):
-            args = [args[0]]
+            #args = [args[0]]
+             c2 = make_divisible(min(args[0], max_channels) * width, 8)
+             args = [c2]  # Scale the input channels for cbam_block
         elif m is BiLevelRoutingAttention:
             c2 = ch[f]
             args = [c2, *args]
